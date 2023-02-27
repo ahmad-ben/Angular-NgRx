@@ -6,8 +6,7 @@ npm install -g @angular/cli
 git clone https://github.com/ahmad-ben/Angular-NgRx.git
 npm install
 ```
-Its also possible to install the modules as usual using npm:
-To Run the Development Backend Server
+Its also possible to install the modules as usual using npm, To Run the Development Backend Server
 We can start the sample application backend with the following command:
 ```bash
 npm run server
