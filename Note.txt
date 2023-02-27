@@ -1,0 +1,1417 @@
+V1 => 'Angular NgRx Course Helicopter View':
+OverView On The Course.
+-------------------------------------------------------------------------------
+V2 => 'NgRx The Complete Guide - Development Environment Setup':
+  git clone https://github.com/angular-university/angular-ngrx-course.git
+  npm install
+  git checkout 1-start
+  git branch
+  npm run server
+  npm start
+-------------------------------------------------------------------------------
+V3 => 'What is NgRx, Why State Management and what are the benefits?':
+The App Without State Management Have A Lot Of Problems:
+  A Lot Of Request To The BackEnd, And This Will Cause A Big Late In Our
+  Application And A Bad User Experience.
+  link The Fetch Observable And The BackEnd Requests In General With The
+  Component Will Cause The Lost Of The Data With The Action Of Destroy Of A
+  Component, So We Need To Other Request When The Component Initialize Again.
+  In Every Change We Should Send It To The Server And Wait The Save In The
+  Server For Reflect The Change And This Take A Lot Of Time.
+We Want These Features:
+  Reduce The Unnecessary Request To The Server.
+  create database in memory that contains our data. So The Data Does Not
+  Dependent On Any Life Cycle Of Any Component.
+  Improve User Experience.
+  The Modification Immediately In The Screen And Save It In The BackGround
+  WithOut Waiting.
+  View Update It Self With New Version Of Data.
+All This Features Can Apply With The State Management, And This Is NgRx:
+  Stand For Angular Reactive Extensions
+  NgRx is a state management system that is based on the Redux pattern.
+  Allow Us Create Client-Side DataBase With Our Data.
+Redux:
+  Instead of being a traditional library or framework, Redux is an application
+  data-flow architecture.
+Different Between RxJS And NgRx:
+  RxJS is for handling complex asynchronous work like handling communication
+  between client and server. Ngrx is for optimally storing data in the client
+  and recalling them from all over the application, usually. If you want to
+  take advantage of single direction data flow using Store in Angular NgRx is
+  the solution.
+-------------------------------------------------------------------------------
+V4 => 'Installing NgRx and the NgRx DevTools':
+If We Do Some Data Change And We Want To Come Back The Original Data, We Can Do
+This By Stop The Command 'npm run server' And Put It Again.
+If We Want Download The Complete Solution We Can Use The Command:
+  'git checkout 1-auth-finished'
+Add NgRx To Our Angular Application:
+  ShutDown Angular CLI Server.
+  ng add @ngrx/store.
+    This Command Just Update 'Add Some Entries' In Our Application Files.
+    app.module.ts:
+      StoreModule.forRoot({}, {}),
+        StoreModule
+  ng add @ngrx/store-devtools
+    This Command Just Update 'Add Some Entries' In Our Application Files..
+      app.module.ts:
+        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() })
+          StoreDevtoolsModule: Module For Store DevTool Library.
+          maxAge: 25: Keep In Memory The 25 Last SnapShots Version Of Our Data
+          logOnly: !isDevMode() Turn Of In Production Model
+DownLoad The Extensions: Redux DevTools.
+Store DevTool Are Browser Extensions That Allow Us To Show The Content Of Our
+InMemory DataBase Easily Using The Chrome Redux DevTools.
+StoreModule
+  The NgRX Store module is a state management library made for Angular. It's
+  derived from the popular Redux state management library for React.
+-------------------------------------------------------------------------------
+V5 => 'Configuring an NgRx Feature Module using NgRx Schematics':
+Different Modules Of Our Application Manage Different Part Of The State Tree,
+That Mean Inside The Main Object In Data We Need To Have For Each Module A
+Property And OfCourse A Value.
+In Our Application We Have Two Modules Inside The Root Module:
+  Auth
+  Courses
+In Angular We Have Three Type Of Loading Modules Techniques:
+Eager loading
+  loading modules before application starts.
+  used to load core modules and feature modules that are required to start the
+  application.
+Preloading
+  loading modules in background just after application starts.
+  used to load specific feature modules that are very likely to be used soon
+  after the application started.
+Lazy loading
+  loading modules on demand.
+  all other modules could be lazily loaded on demand after the application
+  started.
+  Lazy loading is an approach to limit the modules that are loaded to the ones
+  that the user currently needs. This can improve your application's
+  performance and reduce the initial bundle size. By default, Angular uses
+  eager loading to load modules
+In lazy loading and preloading, modules are loaded asynchronously.
+import { RouterModule } from '@angular/router';
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
+@NgModule({
+  imports: [
+    RouterModule.forRoot([
+      {
+        path: 'courses',
+        loadChildren: () => import('./courses/courses.module')
+          .then(m => m.CoursesModule)
+      },
+      {
+        path: '**', redirectTo: '/'
+      }
+    ]),
+    {ngModule: AuthModule, providers: [AuthService]},
+    StoreModule.forRoot({}, {}),
+    StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() })
+  ],
+})
+  In This Case The Load Technique For CoursesModule Is Lazy.
+  In This Case The Load Technique For AuthModule Is Eager.
+For Set Up The NgRx For The Modules That Inside The Main Module:
+  ng generate store auth/Auth --module auth.module.ts
+  auth
+    Path To The Module From The Source Application Module 'app Folder'.
+  Auth
+    Name For The Module That Will Use It.
+  auth.module.ts
+    Name Of The Module File.
+-------------------------------------------------------------------------------
+V6 => 'The Store Service API - Implementing the Login Screen':
+  For Interact With The Store We Need To Have An Instance From It. For Example:
+    private store:Store<TypeName>
+      InterfaceState Is From The 'index.ts > export interface TypeName'
+  For Modify Data In The Store, We Should Use The dispatch Method. The Dispatch
+  Method Have One Argument Of Type Action.
+-------------------------------------------------------------------------------
+V7 => 'Defining NgRx Actions using Action Creators':
+The Type Action Is:
+  Plane JavaScript Object, That We Send To The Store For Add Some Modification,
+  Each Action Object Have A Type Property Her Value Type Is String. And Also
+  Contain Payload Property That His Value Is Any Data For Create New Internal
+  State
+Action:
+  Have A two Common Type, Command Or Event. In All Cases The Action Should Have
+  The Type And Also Usually A Payload.
+Why We Use Dispatch Not The Create Delete...
+  For The Dispatch State We Don't Tell The Store How He Should Exactly Modifier
+  The Data. The Store Will Define How He Can Modify His Internal State.
+The Action interface
+  The interface has a single property, the type, represented as a string. The
+  type property is for describing the action that will be dispatched in your
+  application. The value of the type comes in the form of [Source] Event and is
+  used to provide a context of what category of action it is, and where an
+  action was dispatched from. You add properties to an action to provide
+  additional context or metadata for an action. The most common property is
+  the payload, which adds any associated data needed for the action.
+Example Of Action Object:
+  {
+    type: 'Login Action',
+    payload: {
+      userProfile: user,
+    }
+  }
+  If We Have The Property And His Value With Tje Same Time We Can Write It Just
+  One Time:
+    {Name1: Name1} We Can Write: {Name1}
+We Can Create An Action By A Better Way.
+  import { createAction, props } from "@ngrx/store";
+  import { User } from "./model/user.model";
+  export const login = createAction(
+    "[Login Action] User Login",
+    props<{userProfile: User}>()
+  )
+createAction
+  Is A FUNCTION, Creates a configured Creator function that, when called,
+  returns an object in the shape of the Action interface.
+  Description:
+    Action creators reduce the explicitness of class-based action creators.
+props
+  Is A FUNCTION.
+  Parameters
+    There are no parameters.
+  Returns
+    ActionCreatorProps<Type>
+  The props method is used to define any additional metadata needed for the
+  handling of the action. Action creators provide a consistent, type-safe way
+  to construct an action that is being dispatched.
+userProfile
+  The Property Inside The Payload Object.
+User
+  Type Of The Value Of The Property That Inside The userProfile.
+Now For Use The Function Creature:
+  this.store.dispatch(
+    login({
+      userProfile: user,
+    })
+  )
+    login({Name2: Name2}) Is The Same Like login({Name2}).
+The Dispatch Doesn't Effect On Store State Directly.
+vanilla script, plain JavaScript:
+  The term vanilla script is used to refer to the pure JavaScript (or we can
+  say plain JavaScript) without any type of additional library.
+-------------------------------------------------------------------------------
+V8 => 'Grouping Actions Together with Action Types':
+export const NameOfVariable = createAction(
+  "[Source] Action",
+)
+Source:
+  For Can Detect The Source Of The Action Easily.
+Action:
+  The Description Event 'Logout, Login'.
+We Can Collect All The Related Action Under One SpecificName:
+  Create A New File And Import In It All The NameOfVariables Action:
+  import * as AliasName from 'FileOfRelatedActions';
+  export { AliasName };
+    Now We Have All The Related Action Under This AliasName.
+-------------------------------------------------------------------------------
+V9 => 'NgRx Reducers - Step-by-Step Implementation':
+what is reducer and why we need it:
+  Reducers in NgRx are responsible for handling transitions from one state to
+  the next state in your application. Reducer functions handle these
+  transitions by determining which actions to handle based on the action's
+  type.
+  A reducer is a pure function that takes state and action objects and returns
+  a brand-new state. An action is a simple object signaling the reducer
+  function to invoke.
+  Reducers are pure functions accepting two arguments, the previous state and
+  an Action. When an Action is dispatched ngrx goes through all the reducers
+  those passing as arguments the previous state and the Action, in the order
+  that the reducers where created, until it finds a case for that action.
+  We Use The Reducer To Determine The Response Of The Store State On An Action.
+  Is Need To Pass To The Store So The Store Knows How To React To An Given
+  Action.
+Example:
+  export interface InterfaceState {
+    Property1: Type1,
+  }
+  function authReducer(state, action): InterfaceState {
+    return {Property1 : Value1}
+  }
+  authReducer
+    The Reducer 'Function'.
+  state
+    Previous State Of The Store State.
+  action
+    The Action That Happen.
+  InterfaceState
+    The Return Of This Reducer, And He Represent The Type Of The Value Stored
+    Inside Store State Of This Module:
+      {
+        NameOfModule: {Value}
+      }
+  Value1
+    The Type Of The Value1 Is Type1.
+For Create A Function Reducer With Simple Way:
+export interface InterfaceName {
+  Property1: Type,
+}
+export const initialStateValue: InterfaceName = {
+  Property1: Value,
+};
+export const ReducerName = createReducer(
+  initialStateValue,
+  on(ActionVariableName, (stateOfStore, ActionCurrentValue) => {
+    return {
+      Property1: ValueFromHis Choose
+    }
+  })
+)
+createReducer
+  Creates a reducer function to handle state transitions.
+  Reducer creators reduce the explicitness of reducer functions with switch
+  statements.
+initialStateValue
+  initialState That Provides a state value if the current state is undefined,
+  as it is initially.
+On
+  Associations between actions and state changes.
+  Is A FUNCTION That Associates actions with a given state change function. A
+  state change function must be provided as the last parameter.
+In Store The Application SHould Store This Data.
+  {
+    Property1: ValueFromHis Choose
+  }
+In The File Module We Should Add The Name Of Our Reducer
+  StoreModule.forFeature(fromAuth.authFeatureKey, NameOfOurReducer),
+-------------------------------------------------------------------------------
+V10 => 'Key Concepts Summary - NgRx Actions and Reducers In Action':
+debugger;
+  The debugger keyword stops the execution of JavaScript, and calls (if
+  available) the debugging function.
+Ever Component Wants To Modify The Data, Should Dispatch An Action Dependent On
+The Action The Reducer Function Will Change The State.
+-------------------------------------------------------------------------------
+V11 => 'How to Query the Store Data - An Example':
+For Extract The True Or False From Any Value, We Can Just Add The '!!' Before
+The Value.
+For Get The Data We Can Simply Subscribe With The Mean State Store, Is An
+Observable And With Pipe Using... We Can Manipulate The View.
+If We Refresh The Page The New Data Inside The Store Will Delete.
+When We Open The Redux DevTools We See Automatically Two Actions,
+@ngrx/store/init
+  Action That Dispatch Automatically In The Start Of Application.
+@ngrx/store/update-reducers
+  Add New Features Modules To Our Application.
+-------------------------------------------------------------------------------
+V12 => 'NgRx Selectors - An In-Depth Explanation':
+When We Link A Specific Observable With The Store Observable, This Child
+Observable With All The Calculation And Process Will Executed Each Time The
+Main Observable Receive New Value, Even These Value Does Not For It.
+And This Is A Problem We Need To A Solution It.
+We Can Use 'distinctUntilChanged'
+  Is A FUNCTION, OPERATOR. That Returns a result Observable that emits all
+  values pushed by the source observable if they are distinct in comparison to
+  the last value the result observable emitted.
+  Only emit when the current value is different than the last.
+  If you want to compare based on an object property, you can use
+  distinctUntilKeyChanged instead!
+We Can Use The 'select' Operator.
+  The select Function Do The Work Of The map And Also distinctUntilChanged. Is
+  from '@ngrx/store', Not RxJs.
+By These Two Solution We Prevent The Duplicate Values After The Map Function
+From Send Again To The Child Observable, But The Operation And Calculate Still
+Happen To Find This Value.
+So We Need To Find A Solution For Prevent The Function Map From Executed Until
+The Value Output From It Will Be Different.
+If The Input Was The Same OfCourse The Output Is The Same Also. So It The Input
+DoesN't Change We Do Not Have To Calculate And Executed The Progresses Again.
+Perform The Mapping Operation For A Given Input, And Keep The OutPut Of This
+Mapping Operation In Memory. Then We Will Only Perform The Mapping Again In
+Case The Input Change. If The Input emitted Is The Same Like A Previous We Will
+Just Give A Calculated Value From The Memory Cache. This Notion 'Mapping
+Function With Memory Call Selector'.
+Selector:
+  pure functions used for obtaining slices of store state. @ngrx/store provides
+  a few helper functions for optimizing this selection. Selectors provide many
+  features when selecting slices of state:
+    Portability
+    Memoization
+    Composition
+    Testability
+    Type Safety
+  memoized functions. Because selectors are pure functions, the last result can
+  be returned when the arguments match without reinvoking your selector
+  function. This can provide performance benefits, particularly with selectors
+  that perform expensive computation. This practice is known as memoization.
+Selector Example:
+In The Selector File:
+import { createSelector } from "@ngrx/store";
+export const isLoggedIn = createSelector(
+  state => state["auth"]
+  (auth) => !!auth.user
+)
+export const isLoggedOut = createSelector(
+  isLoggedIn,
+  (loggedIn) => !loggedIn
+)
+In The Component File:
+  select(isLoggedIn)
+createSelector
+  accepts one or more "input" selectors, which extract values from arguments,
+  and an "output" selector that receives the extracted values and should return
+  a derived value. If the generated selector is called multiple times, the
+  output will only be recalculated when the extracted values have changed.
+  When you call the selector, Reselect will run your input selectors with all
+  of the arguments you gave, and looks at the returned values. If any of the
+  results are === different than before, it will re-run the output selector,
+  and pass in those results as the arguments.
+-------------------------------------------------------------------------------
+V13 => 'NgRx Feature Selectors - a Simple Explanation':
+Selector Is Simply A Plane Mapping Function With Memory.
+For Simplify The Selector Function And Also Give A Type To Some Values, For
+Save Typing We Can Use The 'createFeatureSelector':
+The createFeatureSelector Take One Argument, Is The Name Of The Property That
+He Will Search For It In His Input And Extract This Specific Property And Send
+It Like A Output. We Can Add To This Property A Specific Type Instead Of
+Unknown.
+Example:
+  export const SelectorName =
+    createFeatureSelector<TypeOfOutput>("NameOfProperty");
+The Return From The Original Store Is Object, And Each Direct Property Inside
+It Is For A Specific Internal Module, Like:
+{
+  StateForInternalModul: {
+    Property1IM: Value1,
+    Property2IM: Value2,
+  }
+}
+This Part Bellow Call Module State 'Feature Modul':
+  {
+    Property1IM: Value1,
+    Property2IM: Value2,
+  }
+-------------------------------------------------------------------------------
+V14 => 'Implementing User Logout (Practice Lesson)':
+We Need An Instance From The Store Service, This Instance Give Us The Ability
+For Dispatch The Action To Our Store State, But For Change The State Of Store
+In Our Application We Should Use The Reducer That Take The Action And Dependent
+On Soe Condition Change The State.
+-------------------------------------------------------------------------------
+V15 => 'Implementing a Router Authentication Guard (Practice Lesson)':
+For Guard A 'Specific URL' From An Rejected Users We Ably The CanActivate
+Service Class, We Should Inject It In The Main Module:
+  @NgModule({
+    imports: [
+      RouterModule.forRoot([
+        {
+          path: 'courses',
+          canActivate: [NameOfClassServiceActivate]
+        }
+      ]),
+      {ngModule: ModuleChild, providers: [NameOfClassServiceActivate]},
+    ],
+  })
+-------------------------------------------------------------------------------
+V16 => 'Introduction to NgRx Effects - What is a Side Effect?':
+Effects
+  Effects are designed to extract any side-effects (such as Network calls) from
+  components and handle potential race conditions.
+  Key Concepts
+    Effects isolate side effects from components, allowing for more pure
+    components that select state and trigger updates and/or effects in
+    ComponentStore(s).
+    Effects are Observables listening for the inputs and piping them through
+    the "prescription".
+    Those inputs can either be values or Observables of values.
+    Effects perform tasks, which are synchronous or asynchronous.
+For Example Of Side Effect:
+  When We Add Any Change In The Data Such Change An Image An Login Information,
+  We Want From This Change To Save In The State Store, And Reflect Directly In
+  The Screen And Save The Change To The BackEnd From Our Store State. We Can
+  Here We Can Deal With The Save In The BackEnd Like A Side Effect Of Our
+  Change.
+  When We Load Our Page All The Data That Inside The Store Gone. The Solution
+  For This Is Save Our Data In the LocalStorage From The State Store. This Is
+  Also A Side Effect That We Need To Ably It.
+LocalStorage:
+  Browser Level Data Store, Save Information Locally In The Browser.
+For Dealing With NgRx Effects:
+  We Need To Install Library, We Already Install It Because It Was In The
+  'package.json' File: ("@ngrx/effects": "^15.0.0") And We Use The npm install.
+  Configure The Library In Our Application:
+    app.module.ts 'Root Module' Add NgRx Module To Our Application:
+      EffectsModule.forRoot([]) Initialize The Global Services Effect And Add
+      Them To Our Application.
+    auth.module.ts 'Child Module' Add Specific Features To Specific Feature
+    Module:
+      EffectsModule.forFeature([]), Add A Specific Side Effect Those Link With
+      This Specific Feature Module.
+-------------------------------------------------------------------------------
+V17 => 'Understanding NgRx Effects - A Simple Example':
+Writing Effects
+To isolate side-effects from your component, you must create an Effects class
+to listen for events and perform tasks.
+Effects are injectable service classes with distinct parts:
+Actions:
+  An injectable Actions service that provides an observable stream of each
+  action dispatched after the latest state has been reduced.
+A Simple Clarification Class For Effect Work:
+  import { Injectable } from '@angular/core';
+  import { Actions } from '@ngrx/effects';
+  @Injectable()
+  export class AuthEffects{
+    constructor(private action$: Actions){
+      action$.subscribe({
+        next: (action) => {
+          if(action.type == '[Login Action] User Login'){
+            localStorage.setItem('User', JSON.stringify(action["userProfile"]));
+          }
+        }
+      })
+    }
+  }
+We Should Add The Service Class Action In The Correspondent Module:
+  import { AuthEffects } from './auth.effects';
+  @NgModule({
+      imports: [
+        EffectsModule.forFeature([AuthEffects]),
+      ],
+  })
+  This Application ave A lot Of Problem Like:
+    No Save Typing.
+    No Error Handling.
+-------------------------------------------------------------------------------
+V18 => 'NgRx Effects - Step-by-Step Implementation':
+The Previous Implement Of The Effects Have A Lot Of Problems:
+  export class AuthEffects{
+    constructor(private action$: Actions){
+      action$.subscribe({
+        next: (action) => {
+          if(action.type == '[Login Action] User Login'){
+            localStorage.setItem('User', JSON.stringify(action["userProfile"]));
+          }
+        }
+      })
+    }
+  }
+The Problems Are:
+  No Type Save.
+  Check With Pure String Of Type Property.
+  Manually Subscriptions.
+  No Error Handle.
+The Better Version:
+  export class AuthEffects{
+    constructor(private action$: Actions){
+      const login$ = action$.pipe(
+        ofType(AuthActions.login),
+        tap(action => {
+          localStorage.setItem('User', JSON.stringify(action.userProfile));
+        })
+      );
+      login$.subscribe();
+    }
+  }
+ofType
+  Is A FUNCTION, filters an Observable of Actions into an Observable of the
+  actions whose type strings are passed to it.
+  So In ofType(AuthActions.login) Any Action Without The login Action Will Not
+  Pass.
+Tap For Side Effect
+This Version Give Us The Typing Write, But Still Have These Problems:
+  Manually Subscriptions.
+  No Error Handle.
+The New Version For Solve All The Problems:
+  constructor(private action$: Actions){}
+  login$ = createEffect(() => this.action$.pipe(
+    ofType(AuthActions.login),
+    tap(action => {
+      console.log(action);
+      localStorage.setItem('User', JSON.stringify(action.userProfile));
+    })
+  ), {dispatch: false})
+createEffect
+  Is A FUNCTION That Creates an effect from a source and an EffectConfig.
+    Take Like An Input 'Argument' A Function That Should Create An Observable,
+    The createEffect Automatically Subscribe With It And Also He Add
+    Automatically Error Handling.
+    The Most Of Side Effect Result In Dispatching New Action, For Tell NgRx That
+    the action emitted by the effect is Will Not dispatched to the store, We
+    Should Add {dispatch: false} Or We Will Go Inter An Infinite Loop.
+EffectConfig
+  Is An INTERFACE, Configures an effect created by createEffect.
+  interface EffectConfig {
+    dispatch?: boolean
+    functional?: boolean
+    useEffectsErrorHandler?: boolean
+  }
+  dispatch
+    Determines if the action emitted by the effect is dispatched to the store.
+    If false, effect does not need to return type Observable<Action>.
+  functional
+    Determines whether the functional effect will be created. If true, the
+    effect can be created outside the effects class.
+  useEffectsErrorHandler
+    Determines if the effect will be resubscribed to if an error occurs in the
+    main actions stream.
+-------------------------------------------------------------------------------
+V19 => 'Implementing the Logout Effect (Practice Lesson)':
+Always When We Create A Side Effect We Should o Stop Angular CLI 'The Execution
+Of The Server And The Services'.
+-------------------------------------------------------------------------------
+V20 => 'Setting up NgRx Router Store and the Time-Travelling Debugger':
+For Adapt The Screen To The Actions Of The Users When We Replaying The Actions
+We Need The Ngrx DevTools Time-travelling Debugger:
+  a Time-travelling debugger (the Play button and timeline at the bottom), that
+  allows us to replay any Action at any given point of the debugging session,
+  and even replay the whole session while navigating through multiple screens.
+  We Need To Integrate The DevTools With The Router, The Router Is The
+  Controller Of The URL So On The Component That Will Show, So The View.
+First We Need To Install The Library, We Already Install It By The
+'package.json' With The 'npm Install' The Name Is '@ngrx/router-store'.
+Then We Need To Add These Configuration In 'app.module.ts':
+  @NgModule({
+    imports: [
+      StoreModule.forRoot(reducers, {metaReducers}),
+      StoreRouterConnectingModule.forRoot({
+        stateKey: 'router',
+        routerState: RouterState.Minimal,
+      })
+    ],
+  })
+Then We Need To Add These Configuration In Other File And Link Them:
+  export interface AppState{}
+  export const reducers: ActionReducerMap<AppState> = {
+    router: routerReducer
+  }
+Every Router Navigation That Handle By The Router Store Is Will Dispatching
+Like An Action And The State Of The Router Also Will Save In Our Store, So We
+Need To Add A Feature Property For Our Router Feature. The Name Of The Property
+Is The Value Of stateKey, The Form For Save The Router State Usually Was
+RouterState.Minimal Is Very Lite Weight Object For The Router Store That Have
+Some Important Properties Like Url, Params, queryParams... These Just An Action
+But For Change The State We Need To Reducer, That His Name In StoreModule.
+ActionReducerMap<AppState>
+  Key Value Mapping:
+    Keys: State Property For Router In Our Store 'stateKey Value'.
+    Value: Reducer.
+import { SomeThings } from '.';
+  Import from the index.js file at the same level as your current file. The
+  equivalent of ./index
+StoreRouterConnectingModule
+Is A NGMODULE, Connects RouterModule with StoreModule.
+During the navigation, before any guards or resolvers run, the router will
+dispatch a ROUTER_NAVIGATION action, which has the following signature:
+  export type RouterNavigationPayload = {
+    routerState: SerializedRouterStateSnapshot,
+    event: RoutesRecognized
+  }
+Either a reducer or an effect can be invoked in response to this action. If the
+invoked reducer throws, the navigation will be canceled.
+If navigation gets canceled because of a guard, a ROUTER_CANCEL action will be
+dispatched. If navigation results in an error, a ROUTER_ERROR action will be
+dispatched.
+-------------------------------------------------------------------------------
+V21 => 'NgRx Runtime Checks - How do they work?':
+Runtime checks
+  to guide developers to follow the NgRx and Redux core concepts and best
+  practices. They are here to shorten the feedback loop of easy-to-make
+  mistakes when you're starting to use NgRx, or even a well-seasoned developer
+  might make. During development, when a rule is violated, an error is thrown
+  notifying you what and where something went wrong.
+@ngrx/store ships with six (6) built-in runtime checks:
+  Default On:
+    strictStateImmutability: verifies that the state isn't mutated.
+    strictActionImmutability: verifies that actions aren't mutated.
+  Default Off:
+    strictStateSerializability: verifies if the state is serializable.
+    strictActionSerializability: verifies if the actions are serializable.
+    strictActionWithinNgZone: verifies if actions are dispatched within NgZone.
+    strictActionTypeUniqueness: verifies if registered action types are unique.
+All checks will automatically be disabled in production builds.
+Configuring runtime checks
+  It's possible to override the default configuration of runtime checks. To do
+  so, use the runtimeChecks property on the root store's config object. For
+  each runtime check you can toggle the check with a boolean, true to enable
+  the check, false to disable the check.
+    @NgModule({
+      imports: [
+        StoreModule.forRoot(reducers, {
+          runtimeChecks: {
+            strictStateImmutability: true,
+            strictActionImmutability: true,
+            strictStateSerializability: true,
+            strictActionSerializability: true,
+            strictActionWithinNgZone: true,
+            strictActionTypeUniqueness: true,
+          },
+        }),
+      ],
+    })
+strictStateImmutability
+  The number one rule of NgRx, immutability. This strictStateImmutability check
+  verifies if a developer tries to modify the state object. This check is
+  important to be able to work with the state in a predictable way, it should
+  always be possible to recreate the state.
+  We Should Create A New Version, And Not Changing The Original Value Directly.
+strictActionImmutability
+  Uses the same check as strictStateImmutability, but for actions. An action
+  should not be modified.
+strictStateSerializability
+  This check verifies if the state is serializable. A serializable state is
+  important to be able to persist the current state to be able to rehydrate the
+  state in the future. The Date is not serializable.
+All The Info In (https://ngrx.io/guide/store/configuration/runtime-checks)
+-------------------------------------------------------------------------------
+V22 => 'NgRx Metareducers - Step-by-Step Implementation':
+Meta-reducers
+  @ngrx/store composes your map of reducers into a single reducer.
+  Developers can think of meta-reducers as hooks into the action->reducer
+  pipeline. Meta-reducers allow developers to pre-process actions before
+  normal reducers are invoked.
+  Use the metaReducers configuration option to provide an array of
+  meta-reducers that are composed from right to left.
+  Note: Meta-reducers in NgRx are similar to middleware used in Redux.
+  just a fancy name for higher order reducer (i.e., function). Because a
+  reducer is just a function, we can implement higher order reducer —
+  “meta reducer.” higher order function is a function that may receive a
+  function as parameter or even return a function.
+  The Metareducers Are Implement Before The Normal Reducers Are Invoked.
+  Every Time We Will Dispatch An Action The NgRx Store Will Triggered Any
+  Metareducers It's May Have Configured Before Handle The Action. When All The
+  Metareducers Finish Then The Normal Reducer Will Be Handled Dependent On The
+  Action Type.
+Example:
+  export interface AppState{}
+  export function logger(reducer: ActionReducer<any>) : ActionReducer<any>{
+    return (state, action) => {
+      console.log('State before: ', state);
+      console.log('Action before: ', action);
+      return reducer(state, action)
+    }
+  }
+  export const metaReducers: MetaReducer<AppState>[] =
+  !environment.production ? [logger] : [];
+    The Ordering Is Important.
+ActionReducer
+  Is An INTERFACE, function that takes an Action and a State, and returns a
+  State. See createReducer.
+createReducer
+  Must be used with ActionCreator's (returned by createAction). Cannot be used
+  with class-based action creators.
+  The returned ActionReducer does not require being wrapped with another
+  function.
+-------------------------------------------------------------------------------
+V23 => 'NgRx Entity - Section Kickoff':
+OverView On What We Will Do It.
+Sort Clarification: (C:\Learn\PROGRAMMING\Angular\JSClarifications\Sort)
+-------------------------------------------------------------------------------
+V24 => 'NgRx Feature Design - Defining Actions First':
+Route resolver:
+  is the way to prefetch data before loading the component. It is a class that
+  implements Resolve interface. This interface define a resolve method that use
+  when navigation start. Here router waits to pre-fetch data from API before
+  loading the target component.
+Action Structure:
+  import { createAction } from '@ngrx/store';
+  export const ActionName = createAction(
+    "[Source Of Action] Action Clarification",
+    props<{PropertyName: TypeOfProperty}>
+  )
+  Two Type Of Actions:
+  Command:
+    Action For Do something In Future.
+  Event:
+    Reporting SomeThings Happen In The Past.
+  The props Property Is Optional For Add Other Properties With A Specific Type
+  To Our Action 'Payload'.
+-------------------------------------------------------------------------------
+V25 => 'Loading NgRx Entity Data using a Router Resolver':
+Route Resolvers are similar to the Route Guards, with a subtle difference.
+Instead of keeping the user from rendering the page, a resolver ensures that
+certain conditions are met before the route completes. Resolvers are typically
+used to preload data before a specific route resolves.
+Resolve
+  Is An INTERFACE, that classes can implement to be a data provider. A data
+  provider class can be used with the router to resolve data during navigation.
+  The interface defines a resolve() method that is invoked right after the
+  ResolveStart router event. The router waits for the data to be resolved
+  before the route is finally activated.
+The Code Blocks For Add And Activate A Resolver class:
+  export class CoursesResolver implements Resolve<any>{
+    loading = false;
+    constructor(private store: Store){}
+    resolve(route, state) :Observable<any> {
+      return this.store
+        .pipe(
+          tap(() => {
+            if(!this.loading) {
+              this.loading = true;
+              this.store.dispatch(loadAllCourses())
+            }
+            console.log('Resolve Method Ably.');
+          }),
+          first(),
+          finalize(() => this.loading = false)
+        )
+    }
+  }
+In The Current Module:
+  @NgModule({
+    imports: [
+      RouterModule.forChild([
+        {
+          path: '',
+          component: HomeComponent,
+          resolve: {
+            courses: CoursesResolver
+          }
+        },
+      ]),
+    ],
+    providers: [
+      CoursesResolver
+    ]
+  })
+The Observable Inside The Resolve Method Need To Complete Other Ways The
+Resolve Will Not Finish So The Component Will Not Initialize Ever.
+courses
+  Is The Name For The Value That Will Return From Our Class Service.
+-------------------------------------------------------------------------------
+V26 => 'NgRx Effects - Fetching Data From the Backend':
+feature module
+  module delivers a cohesive set of functionality focused on a specific
+  application need such as a user workflow, routing, or forms. While you can do
+  everything within the root module, feature modules help you partition the
+  application into focused areas.
+EffectsModule.forFeature(CoursesEffects)
+  Add To The forFeature All The Class That Represent A Side Effect On Our
+  Feature Module
+map(courses => ActionName(Parameter))
+  This Example Like A Return For The createEffect Function Will Dispatch This
+  Action Automatically.
+-------------------------------------------------------------------------------
+V27 => 'Understanding the NgRx Entity Format':
+When We Have An Action That Have A Data Inside It, And We Want From This Data
+To Memorize Inside The Store State Is Butter To Defined Exactly That Type Of
+This Data. And OfCourse Use The Reducers For Save This Data.
+NgRx Entity
+  small library that helps us to keep our entities in this ideal Entity state
+  format (array of ids plus map of entities). This library is designed to be
+  used in conjunction with NgRx Store and is really a key part of the NgRx
+  ecosystem.
+  The Library Is Already DownLoad 'Package.json > (@ngrx/entity": "^15.0.0",)'
+  Ngrx Entity helps with the commonly needed selectors. This selectors are then
+  ready to be used directly in a component or as a starting point for building
+  other selectors. Though the ngrx Entity allows the writing of state, reducer
+  and selector logic to be easier, the reducer function itself still has to be
+  written.
+The manually Way For Save An Entities:
+  export interface InterfaceName{
+    entities: {[key: number]: Course},
+    ids: number[]
+  }
+  If We Have An Array Like A Data That Will Be Saved, The key Is The Value Of
+  Id Property For Specific Item In The Array, And The Value Is The Specific
+  Item.
+  The ids Is For Defined The Original Order For The Items.
+  This Method Is Powerful But Consume A Lot Of Time.
+  The Solution Is To Use The NgRx Entity Module.
+export interface InterfaceName extends EntityState<EntityType>{}
+  EntityType:
+    Type Of One Entity.
+  Now If We Create A Variable From This Interface We Will Have Some Properties:
+    let VariableName: InterfaceName;
+    VariableName.entities
+    VariableName.ids
+-------------------------------------------------------------------------------
+V28 => 'Implementing Reducers Using the NgRx Entity Adapter':
+export const AdapterName = createEntityAdapter<EntityType>()
+createEntityAdapter<T>
+  A method for returning a generic entity adapter for a single entity state
+  collection. The returned adapter provides many adapter methods for performing
+  operations against the collection type. The method takes an object with 2
+  Options properties for configuration.
+Each Feature Module In Our Application Needs To Defined Its Initial State And
+Use It Also In The Reducer For This We Can Use The:
+  export const InitialState = adapterName.getInitialState();
+  getInitialState
+    Returns the initialState for entity state based on the provided type.
+    Additional state is also provided through the provided configuration object.
+    The initialState is provided to your reducer function. The Initial State
+    Type Will Be Also The Type Of The State Parameter Inside The Second
+    Parameter For The  On Method 'Save Typing'. The Type Of The InitialState
+    And The State Is EntityState<EntityType>.
+  export const coursesReducer = createReducer(
+    initialCourseState,
+    on(CourseActions.AllCoursesLoaded, (state, action) => {
+      return adapter.setAll(action.courses, state)
+    })
+  )
+  SetAll
+    Take All The Value Of The Property Id Inside The Object Inside The Mean
+    Arrays And Make From This Value And Array For The Ids Property That
+    Specific From The EntityState, And Also Use Those Values Like An Property
+    Inside The entities Property That Specific From The EntityState And The
+    Values Are The Main Object Inside Our Main Array.
+Adapter Collection Methods
+  The entity adapter also provides methods for operations against an entity.
+  These methods can change one to many records at a time. Each method returns
+  the newly modified state if changes were made and the same state if no
+  changes were made.
+    addOne: Add one entity to the collection.
+    addMany: Add multiple entities to the collection.
+    setAll: Replace current collection with provided collection.
+    setOne: Add or Replace one entity in the collection.
+    setMany: Add or Replace multiple entities in the collection.
+    removeOne: Remove one entity from the collection.
+    removeMany: Remove multiple entities from the collection, by id or by
+    predicate.
+    removeAll: Clear entity collection.
+    updateOne: Update one entity in the collection. Supports partial updates.
+    updateMany: Update multiple entities in the collection. Supports partial
+    updates.
+    upsertOne: Add or Update one entity in the collection.
+    upsertMany: Add or Update multiple entities in the collection.
+    mapOne: Update one entity in the collection by defining a map function.
+    map: Update multiple entities in the collection by defining a map function,
+    similar to Array.map.
+In Current Module
+StoreModule.forFeature('courses', coursesReducer),
+  courses:
+    State Key, Property Name That Will Be The Key For All The Entities.
+  coursesReducer:
+    Reducer That Will Create And return The Value Of the Key.
+Dictionary Type:
+  A collection of key and value pairs is called a dictionary in TypeScript.
+  The dictionary is also referred as a map or a hash. A map can be created by
+  using the type Map and the keyword new. We can store the collection of key
+  value pairs inside a map by creating a map.
+  More About Dictionary And Map Types:
+    (https://www.carlrippon.com/typescript-dictionary/)
+-------------------------------------------------------------------------------
+V29 => 'NgRx Entity Selectors - Refactoring the Home Component':
+Clarification About The EntityState<SpecificType>:
+  Example:
+    interface InterfaceName extends EntityState<ST>{}
+    interface ST {
+      id: number;
+      name: string;
+    }
+    Result:
+      let VariableName: InterfaceName = {
+        entities: {1: {
+          id: 1,
+          name: 'StringValue';
+        }},
+        ids: [1],
+      }
+The First Selector Better To Be createFeatureSelector That Will Select All The
+Data Related With Our Module Feature 'Courses In Our Case':
+  const selectCoursesState = createFeatureSelector<coursesState>('courses');
+  coursesState:
+    Is The Type Of Data That Will Come Back From The State And Also Give Us The
+    'Save Typing'.
+Entity Selectors
+  The getSelectors method returned by the created entity adapter provides
+  functions for selecting information from the entity.
+  The getSelectors method takes a selector function as its only argument to
+  select the piece of state for a defined entity.
+  This Line: 'export const {selectAll} = adapter.getSelectors()'
+    Will Give Us The Ability Of Export From The File The Method selectAll That
+    For The getSelectors In Any File We Want And Use It .
+export const selectAllCourses = createSelector(
+  selectCoursesState,
+  fromCourses.selectAll,
+)
+  selectAll: 'const selectAll: (state: EntityState<Course>) => Course[]'
+  Take The Full Data That His Type In This Case 'EntityState<Course>' And Go To
+  Entities Property And Inside It We Have Key Value, He Collect The Value In
+  New Array And Return It. The Type Of These Values In Our Case Are 'Course' So
+  The Return Type Will Be 'Course[]'.
+-------------------------------------------------------------------------------
+V30 => 'NgRx Entity Adapter Configuration - sortComparer and selectId':
+createEntityAdapter<T>
+  The method takes an object with 2 Options properties for configuration:
+    selectId: A method for selecting the primary id for the collection.
+    Optional when the entity has a primary key of id.
+    If We Have Other Property Instead Of Id And We Want His Value To Show In
+    Ids. For Example:
+      selectId: course => course.seqN,
+    sortComparer: A compare function used to sort the collection. The comparer
+    function is only needed if the collection needs to be sorted before being
+    displayed. Set to false to leave the collection unsorted, which is more
+    performant during CRUD operations.
+    If We Want Tpo Compare And Order The Entities Dependent On Other Property
+    Value Instead Of The Value Of Id Property, For Example:
+      sortComparer: function compareCourses(c1:Course, c2: Course) {
+        const compare = c1.OtherProperty - c2.OtherProperty;
+        if (compare > 0) {
+          return 1;
+        }else if ( compare < 0) {
+          return -1;
+        }else return 0;
+      }
+-------------------------------------------------------------------------------
+V31 => 'NgRx Data Fetching Solution - How to Load Data Only If Needed':
+We Can Add To Our Data Store A Property With Value Type Boolean, In The Initial
+State We Will Set The Property To False, And In The Coming Data From The Server
+Or API That We Will Put It By Reducer In The Store True, For Example:
+  export interface StateIntType extends EntityState<Course>{
+    PropertyName: boolean,
+  }
+  export const InitialState adapter.getInitialState({
+    PropertyName: false
+  });
+  export const coursesReducer = createReducer(
+    InitialState,
+    on(specificAction, (state, action) =>
+      adapter.setAll(ActionData, {...state, PropertyName: true})
+    )
+  )
+Then Use Selector For Get This Specific Property, For Example:
+  export const selectState = createFeatureSelector<StateIntType>('Property');
+  export const Select = createSelector(
+    selectState,
+    select => select.PropertyName
+  )
+If The Select Value Is False That Mean This State Is The Initial We Need To
+Send Action For Cause Effect That Will Get Data And Save This Data In Store And
+Get It To Our Component From Store. If True We Should Prevent All This Because
+We Already Have The Data.
+  export class CoursesResolver implements Resolve<any>, OnInit{
+    loading = false;
+    constructor(private store: Store){}
+    resolve(route, state) :Observable<any> {
+      return this.store
+      .pipe(
+        select(areCoursesLoaded),
+        tap((value) => {
+          if(!this.loading && !value){
+            this.loading = true;
+            this.store.dispatch(loadAllCourses())
+          }
+        }),
+        filter((value) => value),
+        first(),
+        finalize(() => this.loading = false)
+      )
+    }
+  }
+-------------------------------------------------------------------------------
+V32 => 'Optimistically Editing Entity Data - The Edit Course Dialog':
+In Create Action:
+  export const ActionName = createAction(
+    "[Source] Action Effect",
+    props<TypeOfPayload>(),
+  )
+  For Dispatch The Action:
+    this.store.dispatch(ActionName(Value))
+  The Type Of Value Is The TypeOfPayload.
+Update
+  Special Type From NgRx, That Make The Modify Of Data Easy To Us.
+The Extract Method Is Very Helpful When You Want To Merge To Objects These Have
+A Common Properties.
+-------------------------------------------------------------------------------
+V33 => 'Optimistic Data Editing - Reducer Implementation and Demo':
+The 'Update' Class Variable With the 'updateOne' Method Is Very PowerFul, For
+Example:
+  export const coursesReducer = createReducer(
+    initialState,
+    on(
+      CourseActions.courseUpdating, (state, action) =>
+        return adapter.updateOne(action.update, state)
+      }
+    )
+  )
+In This Case The NgRx Will Take The Value Of The 'Id' Property Inside The
+Update Variable, And Search For The Same Value In The 'Entities' Properties. If
+He Find A Similar Value Then He Will Take The Value Of The 'changes' Property
+Inside The Update Variable, And Compare It With The Original Value Of The Id If
+He Find Any Change The Value Of 'Change' Will OverRide.
+-------------------------------------------------------------------------------
+V34 => 'Data Editing - Saving Data in the background with an Effect':
+Partial<Type>
+  Constructs a type with all properties of Type set to optional. This utility
+  will return a type that represents all subsets of a given type.
+concatMap
+  Great Higher Order Mapping Operation For Save Operations BackEnd.
+The Handle Data In The Store Give Us A Great User Experience But Is Take A Lot
+Of Time And Code, (Actions, Reducers, Effects, Selectors, Entities...).
+-------------------------------------------------------------------------------
+V35 => 'Why NgRx Data? New Section Introduction':
+NgRx Data:
+  abstraction over the Store, Effects, and Entity that radically reduces the
+  amount of code you'll write. As with any abstraction, while you gain
+  simplicity, you lose the explicitness of direct interaction with the
+  supporting NgRx libraries.
+  extension of NgRx state management system for angular framework. The
+  advantage of using NgRx Data is simplicity and a drastic code reduction in
+  compare to traditional approach. Of course the world isn't perfect and you
+  can't use this extension everywhere.
+  Package That Is Part Of NgRx EcoSystem, That Help Us To Handel Entity Tag
+  Data, Like The Notion Of Courses Or Lessons In Our Application.
+Entity:
+  Persistent Object From The Data Base That We Read And Write It, Like The
+  Course And Auth State.
+-------------------------------------------------------------------------------
+V36 => 'Setting Up NgRx Data in a Lazy Loaded Module':
+Add NgRx Data To Our App, And Specifically To Our Lazy Loaded Module:
+In The Root Module 'app.module.ts':
+  EntityDataModule.forRoot({})
+    Add The Entity Configuration For The Root Module, In Our Case We DoN't Have
+    Any Entity Associate To The Root Module.
+    Empty Configuration Entity = {}.
+Now We Should Add The Entity Configuration To Our Lazy Feature Module 'Course':
+  In Feature Module 'courses.module.ts':
+    const entityMetaData : EntityMetadataMap = {
+      Course: {}
+    }
+    Every Key Inside The EntityMetadataMap Represent An Entity In Our Store.
+    The Value Of The Key 'EntityName' Is An Object Have A Lot Of Options Like
+    'sortComparer' and 'selectId'.
+      This Is All The Configuration That Need For Start Saving And Loading Our
+      Entity In Our Programme.
+Plug It Into NgRx Data, Because Our Module Is Lazy Loaded Module We Need To
+Inject New Service Which Is 'Entity Definition Service'. We Use It To Register
+The Entity Configuration 'entityMetaData':
+  export class CoursesModule {
+    constructor(private eds: EntityDefinitionService) {
+      eds.registerMetadataMap(entityMetaData);
+    }
+  }
+  Now We Link The 'Course' Entity To This 'CoursesModule' Courses Lazy Loaded
+  Map.
+We Need Now A Course Entity Service, this Is A NgRx Data Service That Allow To
+Us To Query Data From BackEnd And save It In The Store, And Interact With the
+Data Store Directly, Create Entity Service 'Class Service':
+  import { Injectable } from '@angular/core';
+  import {
+    EntityCollectionServiceBase,
+    EntityCollectionServiceElementsFactory
+  } from '@ngrx/data';
+  import { Course } from '../model/course';
+  @Injectable()
+  export class CourseEntityService extends EntityCollectionServiceBase<Course>{
+    constructor(private SEF: EntityCollectionServiceElementsFactory){
+      super('Course', SEF)
+    }
+  }
+  '<Course>' Is the Type Of The Entity.
+  'Course' Is the Entity Name.
+The Instance From The CourseEntityService Will Have A Lot Of Method That Give
+Us The Ability For Dealing With The Entity, Like:
+  addAllToCache
+    Replace all entities in the cached collection. Does not save to remote
+    storage.
+    @param entities — to add directly to cache.
+    @param options — options such as mergeStrategy
+    Add A Series Of Entities To the Store.
+  getAll
+    Dispatch action to query remote storage for all entities and merge the
+    queried entities into the cached collection.
+    @param options — options that influence merge behavior
+    @returns
+    Observable of the collection after server reports successful query or the
+    query error.
+    @see — load ()
+    Trigger A BackEnd Rest Request that Will Try To Fetch The Data From
+    '/Api/Courses' EndPoint.
+  entities$
+    Observable of all entities in the cached collection.
+    Access All The Entities Inside The Store.
+Finally We Need To Add Our Service Entity In The providers For Can Use
+Instances From It.
+  providers: [
+    CoursesHttpService,
+    CourseEntityService
+  ]
+-------------------------------------------------------------------------------
+V37 => 'How Does NgRx Data Work? Transparent Fetching Data In Action':
+In Our Resolve Service Class:
+  export class CoursesResolver implements Resolve<boolean>{
+    constructor(private coursesEntityInstance: CourseEntityService){}
+    resolve(route, state): Observable<boolean> {
+      return this.coursesEntityInstance.getAll()
+        .pipe(
+          map(Courses => !!Courses)
+        )
+    }
+  }
+getAll: Every Method Start With Get Will Do A Http Get Request To The BackEnd
+And The 'getAll' Specifically Will Returns An Observable The Type Of His Data
+Is An Array Of The Type That The Class EntityCollectionServiceBase That He
+Extend From It Will Return, In Our Case 'Observable<Course[]>'. So the getAll
+Will Do An Http Request Get Method To The URL. The GetAll Will trying To Deduce
+The URL And This By (HostURl/api/NameOfEntity+s) In Our Case The URL Was
+'http://localhost:4200/api/courses/'That Will Get A Data From The
+BackEnd And If This It Success And Retrieving Those Courses The GetAll Method
+Will Store Them In The Store. the Observable From the GetAll Will Emit Just One
+Value And Complete.
+NameOfEntity:
+  Is Get From These Two Place, They Should Be The Same Name, For Get It And
+  Turn It To Lower Case For Guess The URL.
+    export class CourseEntityService
+      extends EntityCollectionServiceBase<Course>{
+      constructor(private Ins: EntityCollectionServiceElementsFactory){
+        super('NameOfEntity', Ins)
+      }
+    }
+    const entityMetaData : EntityMetadataMap = {
+      NameOfEntity: {}
+    }
+The Return Fot The GetAll Should Be Contain All The Entities Directly In Array.
+-------------------------------------------------------------------------------
+V38 => 'NgRx Custom Data Service - Fetching Data From the Backend':
+Customize NgRx Data For Can Load The Correct data From BackEnd.
+We Need A New Service Class That Can Change The Behavior Of The Method Link
+With 'coursesEntityInstance', This Class Name 'Data Service':
+  export class CoursesDataService extends DefaultDataService<Course>{
+    constructor(http: HttpClient, httpUrlGenerate: HttpUrlGenerator){
+      super('Course', http, httpUrlGenerate);
+    }
+    getAll(): Observable<Course[]> {
+      return this.http.get('/api/courses')
+        .pipe(
+          map(para => para['payload'])
+        )
+    }
+  }
+  Course:
+    Name Of The Entity.
+In The Module:
+  const entityMetaData : EntityMetadataMap = {
+    Course: {}
+  }
+  @NgModule({
+    providers: [
+      CoursesDataService
+    ]
+  })
+  export class CoursesModule {
+    constructor(
+      private eds: EntityDefinitionService,
+      private entityDataService: EntityDataService,
+      private coursesDataService: CoursesDataService,
+      ) {
+      eds.registerMetadataMap(entityMetaData);
+      entityDataService.registerService('Course', coursesDataService)
+    }
+  }
+    That Mean Every Time NgRx Will Ably A Specific Method On The Course Entity
+    He Will Show First  entityDataService If He Specify A Behavior To This
+    Method Or Not, If Yes Her Behavior For This Method Will Be Executed Then
+    Complete The Process From The Original Service Class 'coursesDataService'.
+-------------------------------------------------------------------------------
+V39 => 'Controlling Data Loading with the NgRx Data loaded flag':
+The GetAll Method Cause A Http Request, So It Is Not For Fetch Data From The
+Store, And Also We Need To Prevent It From Happen When We Have Already The
+Data. For This We Use The loaded$ Method:
+  Observable Of Boolean Will Emit true when the collection has been loaded, So
+  We Can USe It To The Control The Usage Of The GetAll And The Ability Of Show
+  Our Component In Resolver Service:
+    return this.coursesEntityInstance.loaded$
+      .pipe(
+        tap(loaded => {
+          if(!loaded){
+            this.coursesEntityInstance.getAll()
+          }
+        }),
+        filter(para => para),
+        first(),
+      )
+-------------------------------------------------------------------------------
+V40 => 'Querying Store Data with NgRx Data and the entities$ Observable':
+entities$
+  Is A Method That Return Observable of all entities in the cached collection.
+-------------------------------------------------------------------------------
+V41 => 'NgRx Data CRUD - Why use Optimistic Updates?':
+Update:
+  Method That Can Dispatch action to save the updated entity (or partial
+  entity) in remote storage. The update  entity may be partial (but must have
+  its key) in which case it patches the existing entity.
+  @param entity — update entity, which might be a partial of T but must at
+  least have its key. One Entity In Our Case 'One Course Object'
+  @param options — options that influence save and merge behavior
+  @returns Observable of the updated entity after server reports successful
+  save or the save error.
+  The Update Create An Put Http Request And Also Update The Data In The Store.
+  The Update Will trying First To Deduce The URL And This By The Convention
+  (HostURl/api/NameOfEntity/ValueOfIdProperty) In Our Case The URL Was
+  'http://localhost:4200/api/course/4'That Will Cause An Http Put For Update
+  The Specific Data To The New One In The BackEnd.
+The Nature Of Work For The Update Is Do The Put Request First And After The
+Finish Of The Put Request He Will Also Put The Changes To The Data But This Is
+'Pessimistic Approach' For Make The Change To The Store 'View' First We Should
+Work With The 'Optimistic Approach':
+  const entityMetaData : EntityMetadataMap = {
+    Course: {
+      sortComparer: compareCourses,
+      entityDispatcherOptions: {
+        optimisticUpdate: true
+      }
+    }
+  }
+  Is By Default False.
+-------------------------------------------------------------------------------
+V42 => 'NgRx Data CRUD - Why Pessimistic Data Creation?':
+add
+  Method For Dispatch action to save a new entity to remote storage.
+  @param entity to add, which may omit its key if pessimistic and the server
+  creates the key; must have a key if optimistic save.
+  @returns A terminating Observable of the entity after server reports
+  successful save or the save error.
+  Do First An Http Post Request By Deduce The URL And This By The Convention
+  (HostURl/api/NameOfEntity/) In Our Case The URL Was
+  'http://localhost:4200/api/course/' For trying To Save Our Entity To Our
+  BackEnd, After A Success Saving He Will Also Add This Entity To The Store
+  With The Other Entities Those Already There. The Id Will Be Generated By
+  Default. It's A Pessimistic Approach 'Dependent On The Work Of The BackEnd We
+  Can Use This Configuration To Turn It To Optimistic Approach' But In Our Case
+  This Is Not The Best Idea, We Can Use It If We Dealing With The FireBase:
+  BackEnd:
+    const entityMetaData : EntityMetadataMap = {
+      Course: {
+        sortComparer: compareCourses,
+        entityDispatcherOptions: {
+          optimisticAdd: true,
+        }
+      }
+    }
+  In The Pessimistic:
+    We Have The Ability For Don't Adding The Value Of The Property Id, Because
+    We Will Wait For The Response Of The Server, And He Will Add The Id
+    Property With A Unique Value.
+  In The Optimistic:
+    We Don't Have The Ability For Don't Adding The Value Of The Property Id,
+    Because We Will Not Wait For The Response Of The Server.
+-------------------------------------------------------------------------------
+V43 => 'NgRx Data CRUD - Optimistic Delete Implementation':
+delete
+  Dispatch action to delete entity from remote storage by key.
+  @param key — The entity to delete
+  @param options — options that influence save and merge behavior
+  @returns An Observable of the deleted key after server reports successful
+  save or the save error.
+  Do An Http Delete Request By Deduce The URL And This By The Convention
+  (HostURl/api/NameOfEntity/ValueOfIdProperty) In Our Case The URL Was
+  'http://localhost:4200/api/course/102' For trying To Delete Our Entity In Our
+  BackEnd, We Can Subscribe To The Return Observable To See The Response. He
+  Will Directly Delete This Entity From The Store. It's A Optimistic Approach
+  'Dependent On The Work Of The BackEnd We Can Use This Configuration To Turn
+  It To Pessimistic Approach' But In Our Case And The Most Cases The Optimistic
+  Is The Best Idea, We Can Change If We Want By:
+    const entityMetaData : EntityMetadataMap = {
+      Course: {
+        sortComparer: compareCourses,
+        entityDispatcherOptions: {
+          optimisticDelete: false,
+        }
+      }
+    }
+-------------------------------------------------------------------------------
+V44 => 'Setting Up a new Entity - The Lesson Entity':
+In Our Feature Module 'courses.module.ts':
+  const entityMetaData : EntityMetadataMap = {
+    Course: {
+      sortComparer: compareCourses,
+      entityDispatcherOptions: {
+        optimisticUpdate: true,
+      }
+    },
+    Lesson: {
+      sortComparer: compareLessons,
+    }
+  }
+  @NgModule({
+    providers: [
+      LessonEntityService,
+    ]
+  })
+    Lesson Is The Name Of The New Basic Entry.
+    compareLessons For Detect The Order Of The Entities Inside The Entities
+    Property.
+    LessonEntityService Is A Class Service 'Listen Entity Service' For Can
+    Easily Interact With The Lesson Basic Entity With A Type Save Way.
+In 'lesson-entity.service.ts':
+  export class LessonEntityService extends EntityCollectionServiceBase<Lesson>{
+    constructor(serviceElementFactory: EntityCollectionServiceElementsFactory){
+      super('Lesson', serviceElementFactory);
+    }
+  }
+-------------------------------------------------------------------------------
+V45 => 'Implementing the Course Component Using NgRx Data':
+difference between extend and implement in typescript
+  The short answer for him was:
+    extends: The class get all these methods and properties from the parent, so
+    you don't have to implement.
+    implements: The class has to implement methods and properties.
+find
+  Returns the value of the first element in the array where predicate is true,
+  and undefined otherwise.
+  @param predicate find calls predicate once for each element of the array, in
+  ascending order, until it finds one where predicate returns true. If such an
+  element is found, find immediately returns that element value. Otherwise,
+  find returns undefined.
+  @param thisArg If provided, it will be used as the this value for each
+  invocation of predicate. If it is not provided, undefined is used instead.
+difference between Find HoF and Filter Hof in JavaScript
+  The find() method returns the value of the first element in the array that
+  satisfies the provided testing function. Otherwise undefined is returned.
+-------------------------------------------------------------------------------
+V46 => 'Lessons Pagination using NgRx Data':
+entities$
+  Property That Return An Observable of all entities in the cached collection.
+getWithQuery
+  the query in a form understood by the server.
+  Dispatch action to query remote storage for the entities that satisfy a query
+  expressed with either a query parameter map or an HTTP URL query string, and
+  merge the results into the cached collection.
+  @returns An Observable of the queried entities after server reports
+  successful query or the query error. For Example:
+  loadLessonsPage(course: Course) {
+    this.lessonEntityService.getWithQuery({
+      'courseId': (course.id).toString(),
+      'pageNumber': (this.nextPage).toString(),
+      'pageSize': '3',
+    })
+  }
+  Like Always The GetWithQuery Will Try To Figure Out The URL Bu This
+  Convention:
+  (HostURl/api/NameOfEntity+s/?QueryParameter1=Value&QueryParameter2=Value)
+  In Our Case:
+  http://localhost:4200/api/lessons/?courseId=4&pageNumber=0&pageSize=9
+  The 'GetWithQuery' Will Do A Http Get Request To The BackEnd And Returns An
+  Observable The Type Of His Data Is An Array Of The Type That The Class
+  EntityCollectionServiceBase That He Extend From It Will Return, In Our Case
+  'Observable<Lesson[]>'. So the GetWithQueryWill Do An Http Request Get Method
+  To The URL. The GetWithQuery Will DeduceThe URL If This It Success And
+  Retrieving These Array Of Lessons The GetWithQuery MethodWill Store Them In
+  The Store.
+For Know The Data That Will Come Exactly Ho Should To See The BackEnd Side
+URL.
+If We Have An Observable That Emit Two Or More Values In The Same Time We
+Should Use The 'throttleTime(0)'.
+-------------------------------------------------------------------------------
+V47 => 'Switching an NgRx Application to OnPush Change Detection':
+Change Detection
+  Angular runs its change detection mechanism periodically so that changes to
+  the data model are reflected in an application's view. Change detection can
+  be triggered either manually or through an asynchronous event (for example, a
+  user interaction or an XMLHttpRequest completion).
+OnPush Change Detection
+  The Template And Component Will Not Update Until A Changes Happen For This
+  Specific Component, If We Have Any Change That Not Directly Link With The
+  Data Of Our Component 'Observable Value, Input Variable' The Component Will
+  Not Be Updated, If We Have The Reactive Extension Pattern Change Application
+  To The OnPush Change Detection Will Be Easy. If We Do Not Have A Big Data We
+  Do Not Have To Change The Application To This Approach.
+For Change A Component To The OnPush Change Detection:
+  import { ChangeDetectionStrategy} from '@angular/core';
+  @Component({
+    changeDetection: ChangeDetectionStrategy.OnPush,
+  })
+  If We Have In Our Component A Lot Of Manually Subscriptions To The Observable
+  This Will Cause A ALot Of Error. But If We Use The async Pipe Inside
+  Templates This Method For Detection Will Be Great.
+-------------------------------------------------------------------------------
+V48 => 'NgRx Course - Conclusions & Key Takeaways':
+Review
+-------------------------------------------------------------------------------
